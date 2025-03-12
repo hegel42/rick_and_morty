@@ -3,10 +3,14 @@ part of 'home_screen_bloc.dart';
 @immutable
 sealed class HomeScreenEvent {}
 
-class FetchHomeDataEvent extends HomeScreenEvent {
-  FetchHomeDataEvent({this.regionCode});
+class InitFetchEvent extends HomeScreenEvent {
+  InitFetchEvent({this.searchQuery});
 
-  final String? regionCode;
+  final String? searchQuery;
 }
 
-class LoadNextEvent extends HomeScreenEvent {}
+class FetchNext extends HomeScreenEvent {
+  FetchNext({this.searchQuery});
+
+  final String? searchQuery;
+}

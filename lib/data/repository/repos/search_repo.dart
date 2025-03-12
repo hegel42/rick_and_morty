@@ -1,13 +1,11 @@
-import 'package:dio/dio.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
-import '../../dio_settings/dio_exception.dart';
 import '../../models/article_response.dart';
 import 'i_search_repo.dart';
 
 class SearchRepo extends ISearchRepo {
-  SearchRepo({required this.dio});
-
-  final Dio dio;
+  SearchRepo({required this.client});
+  final GraphQLClient client;
 
   @override
   Future<ArticlesResponse> getSearchArticles({
@@ -15,18 +13,31 @@ class SearchRepo extends ISearchRepo {
     required String sortId,
   }) async {
     try {
-      final response = await dio.get(
-        'everything',
-        queryParameters: {
-          'q': searchText,
-          'sortBy': sortId,
-        },
+      final QueryResult result = await client.query(
+        QueryOptions(
+          document: gql('''
+            query GetSearchArticles(\$query: String!, \$sort: String!) {
+              searchArticles(query: \$query, sort: \$sort) {
+                title
+                description
+                url
+              }
+            }
+          '''),
+          variables: {
+            'query': searchText,
+            'sort': sortId,
+          },
+        ),
       );
 
-      return ArticlesResponse.fromJson(response.toString());
-    } on DioException catch (e) {
-      final errorMessage = DioExceptions.fromDioError(e).toString();
-      throw errorMessage;
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      return ArticlesResponse.fromJson(result.data.toString());
+    } catch (e) {
+      throw Exception('GraphQL Query Error: $e');
     }
   }
 }

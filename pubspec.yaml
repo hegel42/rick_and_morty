@@ -49,6 +49,7 @@ dependencies:
   meta: ^1.11.0
   mockito: ^5.4.4
   graphql_flutter: ^5.2.0-beta.8
+  graphql: ^5.2.0-beta.11
 
 dev_dependencies:
   flutter_lints: ^3.0.0

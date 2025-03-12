@@ -1,48 +1,47 @@
-import 'package:dio/dio.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../common/constants/network_constants.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-class DioClient {
-  final options = BaseOptions(
-    baseUrl: NetworkConstants.BASE_URL,
-    connectTimeout: NetworkConstants.apiTimeOut,
-    receiveTimeout: NetworkConstants.apiTimeOut,
-    queryParameters: {'apiKey': NetworkConstants.KEY},
-  );
-
-  late final dio = Dio(options)
-    ..interceptors.addAll(
-      [
-        _BasicInterceptor(),
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          compact: false,
-        ),
-      ],
+class GraphQLService {
+  GraphQLService() {
+    final httpLink = HttpLink(
+      NetworkConstants.BASE_URL,
+      // defaultHeaders: {'apiKey': NetworkConstants.KEY},
     );
 
-  Dio getDio() {
-    return dio;
+    client = GraphQLClient(
+      link: httpLink,
+      cache: GraphQLCache(),
+    );
   }
-}
+  late final GraphQLClient client;
 
-class _BasicInterceptor implements Interceptor {
-  @override
-  void onError(
-    DioException error,
-    ErrorInterceptorHandler handler,
-  ) {
-    handler.next(error);
+  Future<QueryResult> performQuery(
+    String query, {
+    Map<String, dynamic>? variables,
+  }) async {
+    final options = QueryOptions(
+      document: gql(query),
+      variables: variables ?? {},
+    );
+    final result = await client.query(options);
+    if (result.hasException) {
+      throw Exception(result.exception.toString());
+    }
+    return result;
   }
 
-  @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    handler.next(options);
-  }
-
-  @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
-    handler.next(response);
+  Future<QueryResult> performMutation(
+    String mutation, {
+    Map<String, dynamic>? variables,
+  }) async {
+    final options = MutationOptions(
+      document: gql(mutation),
+      variables: variables ?? {},
+    );
+    final result = await client.mutate(options);
+    if (result.hasException) {
+      throw Exception(result.exception.toString());
+    }
+    return result;
   }
 }

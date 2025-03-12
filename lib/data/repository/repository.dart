@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import '../dio_settings/dio_client.dart';
 import 'repos/home_repo.dart';
 import 'repos/i_home_repo.dart';
@@ -10,18 +10,18 @@ import 'repos/search_repo.dart';
 class Repository {
   late IHomoRepo homeRepo;
   late ISearchRepo searchRepo;
-  DioClient? dioClient;
+  GraphQLService? graphQLService;
 
   Future init() async {
     final prefs = await SharedPreferences.getInstance();
-    final dio = _getDio(prefs);
+    final client = _getGraphQLClient(prefs);
 
-    homeRepo = HomeRepo(dio: dio);
-    searchRepo = SearchRepo(dio: dio);
+    homeRepo = HomeRepo(client: client);
+    searchRepo = SearchRepo(client: client);
   }
 
-  Dio _getDio(SharedPreferences preferences) {
-    dioClient = DioClient();
-    return dioClient!.getDio();
+  GraphQLClient _getGraphQLClient(SharedPreferences preferences) {
+    graphQLService = GraphQLService();
+    return graphQLService!.client;
   }
 }
